@@ -1,5 +1,5 @@
 import numpy as np
-from setting.setting import api_dic_path
+from setting.settings import api_dic_path
 from log import ApiLog, InputData
 from tqdm import tqdm
 from torch.utils.data import Dataset
@@ -72,6 +72,6 @@ class MyDataset:
 
 
 if __name__ == "__main__":
-    from setting.setting import nonrepro_path
+    from setting.settings import nonrepro_path
 
     data_set = MyDataset(nonrepro_path, padding_length=50, stride=1)
