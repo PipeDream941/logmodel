@@ -2,21 +2,22 @@
   - **data/**
     - api2token.npy # api的embedding
     - apiFunList.csv # 所有api的列表
-    - api_embedings.csv # api的embedding
+    - api_embedings.npy # api的embedding
+    - api_embed_ae.npy # api的降维embedding
   - **embed/**
-    - apivocab_embed.py
-    - test_sim.ipynb
-    - test_sim.py
+    - apivocab_embed.py # api词嵌入处理
+    - dimension.py # api词嵌入降维
+    - dimension_loss.png # ae降维loss曲线
+    - gen_token_dic.py # 保存api词嵌入到api2token.npy
+    - test_sim.py # 计算降维前后api_embedding_matrix的相似度
   - **log/**
-
     - apilog.py
     - dataset.py
     - inputdata.py
     - log.py
   - **model/**
     - **ae/**
-      - ae.ipynb
-      - ae.py
+      - ae.py # autoencoder模型 用于降维
     - **transformer/**
       - 1.ipynb
       - dataset.pkl
@@ -28,7 +29,7 @@
     - hyper.py
     - setting.py
 # 运行步骤
-注：以下命令行都需要 cd 到项目根目录下 
+注：命令行都需要 cd 到项目根目录下 
 
 ## Step 1 api词嵌入处理
 
@@ -39,3 +40,5 @@
 `python .\embed\dimension.py`
 - 保存api词嵌入到api2token.npy
 `python .\embed\gen_token_dic.py`
+- 可选: 计算降维前后api_embedding_matrix的相似度
+`python .\embed\test_sim.py`
