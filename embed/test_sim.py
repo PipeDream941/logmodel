@@ -7,7 +7,12 @@ from tqdm import tqdm
 from setting.settings import api_embed_ae_path, api_embed_path
 
 
-def get_sim_matrix(_api_embed_path: str):
+def get_sim_matrix(_api_embed_path: str) -> np.ndarray:
+    """
+    计算api embedding的相似度矩阵
+    :param _api_embed_path: str, 保存api embedding的npy文件路径
+    :return: api_sim_matrix: np.ndarray, api embedding的相似度矩阵
+    """
     print("start compute sim matrix, api embed path:", _api_embed_path)
     api_embedding = np.load(_api_embed_path, allow_pickle=True)
     n = len(api_embedding)

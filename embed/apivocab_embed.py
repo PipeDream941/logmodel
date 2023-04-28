@@ -1,14 +1,14 @@
-# 选择tokenizer和model生成api的embedding的npy文件，并保存api2token字典
+# 选择tokenizer和model生成api的embedding的npy文件
 # 参数：
 #   - tokenizer_name: 选择的tokenizer
 #   - model_name: 选择的model
 #   - api_csv_path: api_csv文件路径
 #   - api_embed_path: 保存api embedding的npy文件路径
-#   - gen_dic: 是否生成api2token字典
-#   - api_dic_path: 保存api2token字典
+#   - gen_dic: 是否生成api_dic字典
+#   - api_dic_path: 保存api_dic字典
 # 输出：
 #   - api_embed_path: 保存api embedding的npy文件
-#   - api_dic_path: 保存api2token字典
+#   - api_dic_path: 保存api_dic字典
 import sys
 
 sys.path.extend(['D:\\workspace\\centific\\apimodel'])
@@ -54,12 +54,12 @@ def get_opts(argv):
     params = default_params
     for opt, arg in opts:
         if opt in ("-h", "--help"):
-            print("选择tokenizer和model生成api的embedding的npy文件，并保存api2token字典")
+            print("选择tokenizer和model生成api的embedding的npy文件，并保存api_dic字典")
             print("参数：")
-            print("  - gen_dic: 是否生成api2token字典")
+            print("  - gen_dic: 是否生成api_dic字典")
             print("输出：")
             print("  - api_embed_path: 保存api embedding的npy文件")
-            print("  - api_dic_path: 保存api2token字典")
+            print("  - api_dic_path: 保存api_dic字典")
             sys.exit()
         elif opt == "--gen_dic":
             params["gen_dic"] = arg

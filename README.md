@@ -13,7 +13,7 @@
   - **log/**
     - apilog.py
     - dataset.py
-    - inputdata.py
+    - transformerdata.py
     - log.py
   - **model/**
     - **ae/**

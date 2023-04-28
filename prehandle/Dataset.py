@@ -1,6 +1,6 @@
 import numpy as np
 from setting.settings import api_dic_path
-from log import ApiLog, InputData
+from log_model import ApiLog, TransformerData
 from tqdm import tqdm
 from torch.utils.data import Dataset
 import torch
@@ -37,17 +37,17 @@ class MyDataset:
         self.path = path
         self.padding_length = padding_length
         self.stride = stride
-        self.api2token = np.load(api_dic_path, allow_pickle=True).item()
+        self.api_dic = np.load(api_dic_path, allow_pickle=True).item()
         self.model_dim = self.get_model_dim()
-        self.vocab_size = len(self.api2token) + 1
+        self.vocab_size = len(self.api_dic) + 1
         self.file_list = list(self.path.glob("*.csv"))
         self.file_num = len(self.file_list)
         self.data = self.get_dataset()
 
 
     def get_model_dim(self):
-        for k, v in self.api2token.items():
-            return len(v)
+        for k, v in self.api_dic.items():
+            return len(v[1])
 
 
 
@@ -56,7 +56,7 @@ class MyDataset:
         datalist = []
         for file in tqdm(self.file_list):
             content = ApiLog(file)
-            input_data = InputData(content.df, self.api2token, self.model_dim)
+            input_data = TransformerData(content.df, self.api_dic, self.model_dim)
             data, label, token_set = input_data.get_train_data()
             vocab_set = vocab_set | token_set # 合并两个集合
             datalist.append(
@@ -65,13 +65,16 @@ class MyDataset:
         combined_dataset = datalist[0]
         for ds in datalist[1:]:
             combined_dataset += ds
-        # self.vocab_size = len(vocab_set)
+        self.vocab_size = len(vocab_set)
         return combined_dataset
 
 
 
 
 if __name__ == "__main__":
-    from setting.settings import nonrepro_path
+    from pathlib2 import Path
 
-    data_set = MyDataset(nonrepro_path, padding_length=50, stride=1)
+    data_path = r"C:\Users\sivan\Downloads\LogdiffTest\difference data\runtimeapi2"
+    data_path = Path(data_path)
+
+    data_set = MyDataset(data_path, padding_length=50, stride=1)
