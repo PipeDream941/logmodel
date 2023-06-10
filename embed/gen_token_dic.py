@@ -8,6 +8,7 @@ sys.path.extend(['D:\\workspace\\centific\\apimodel'])
 import os
 import numpy as np
 from setting.settings import api_embed_ae_path, api_dic_path, api_csv_path
+from embed.apivocab_embed import read_api_csv
 
 
 def gen_dic(_api_csv_path, _api_embed_path: str, _api_dic_path: str):
@@ -21,13 +22,10 @@ def gen_dic(_api_csv_path, _api_embed_path: str, _api_dic_path: str):
     api_embedding = np.load(_api_embed_path, allow_pickle=True)
     api_dic = {}
 
-    with open(_api_csv_path, 'r') as f:
-        api_list = f.read().split("\n")
-    for api in api_list[1:-1]:
-        # api_list[1:-1] 删去表头和结尾的空格
-        # index从0开始
-        index, api_fun = api.split(",")
-        api_dic[api_fun] = (index, api_embedding[int(index)])
+
+    api_list = read_api_csv(_api_csv_path)
+    for index, api in enumerate(api_list):
+        api_dic[api] = (index, api_embedding[index])
     # 将空api的embedding置为0,长度为api_embedding文件的维度
     api_dic[""] = (len(api_dic.keys()) + 1, np.zeros(api_embedding.shape[1]))
     np.save(_api_dic_path, api_dic)

@@ -5,3 +5,4 @@ pathlib2==2.3.6
 torch==2.0.0
 tqdm==4.65.0
 transformers==4.24.0
+pytz~=2022.7

@@ -1,6 +1,19 @@
 import numpy as np
 import torch
-
+def get_position_encoding(time_list: list, model_dim=10) -> np.ndarray:
+    """
+    add time series information into data using position encoding
+    :param time_list:
+    :return: position_encodings
+    """
+    position_encodings = np.zeros((len(time_list), model_dim))
+    for pos in range(len(time_list)):
+        time = time_list[pos]
+        for i in range(model_dim):
+            position_encodings[pos, i] = time / np.power(10000, (i - i % 2) / model_dim)
+    position_encodings[:, 0::2] = np.sin(position_encodings[:, 0::2])  # 2i
+    position_encodings[:, 1::2] = np.cos(position_encodings[:, 1::2])  # 2i+1
+    return position_encodings
 
 class TransformerData:
     def __init__(self, df, api_dic, model_dim=768, padding_length=50):
@@ -11,24 +24,10 @@ class TransformerData:
         self.labels = self.get_label()
         self.api2index, self.index2api = self.get_api2index()
         self.log_api_remove_outlier() # remove outlier
-        self.position_encodings = self.get_position_encoding(self.df["time"].tolist())
+        self.position_encodings = get_position_encoding(self.df["time"].tolist())
         self.input_data = self.get_trans_data()
 
 
-    def get_position_encoding(self, time_list: list) -> np.ndarray:
-        """
-        add time series information into data using position encoding
-        :param time_list:
-        :return: position_encodings
-        """
-        position_encodings = np.zeros((self.log_length, self.model_dim))
-        for pos in range(self.log_length):
-            time = time_list[pos]
-            for i in range(self.model_dim):
-                position_encodings[pos, i] = time / np.power(10000, (i - i % 2) / self.model_dim)
-        position_encodings[:, 0::2] = np.sin(position_encodings[:, 0::2])  # 2i
-        position_encodings[:, 1::2] = np.cos(position_encodings[:, 1::2])  # 2i+1
-        return position_encodings
 
     def log_api_remove_outlier(self):
         """

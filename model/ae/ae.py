@@ -9,6 +9,7 @@ from torch import optim
 from torch.utils.data import DataLoader, TensorDataset
 import matplotlib.pyplot as plt
 from setting.settings import api_embed_path, api_embed_ae_path
+from tqdm import tqdm
 
 
 class AutoEncoder(nn.Module):
@@ -44,19 +45,20 @@ class AutoEncoder(nn.Module):
 
 def train(_model, _optimizer, _criterion, _dataloader, _num_epochs):
     epoch_loss_list = []
-    for epoch in range(_num_epochs):
-        loss_list = []
-        for batch in _dataloader:
-            _optimizer.zero_grad()  # 梯度清零
-            input_data = batch[0]
-            output_data = _model(input_data)
-            loss = _criterion(output_data, input_data)
-            loss.backward()
-            _optimizer.step()
-            loss_list.append(loss.item())
-        print(f"Epoch {epoch + 1}/{_num_epochs}, Train Loss: {np.mean(loss_list):.4f}")
-        epoch_loss_list.append(np.mean(loss_list))
+    with tqdm(total=_num_epochs) as pbar:
+        for epoch in range(_num_epochs):
+            loss_list = []
+            for batch in _dataloader:
+                _optimizer.zero_grad()  # 梯度清零
+                input_data = batch[0]
+                output_data = _model(input_data)
+                loss = _criterion(output_data, input_data)
+                loss.backward()
+                _optimizer.step()
+                loss_list.append(loss.item())
+            loss_mean = np.mean(loss_list)
+            epoch_loss_list.append(loss_mean)
+            pbar.set_postfix({'epoch': '{:02d}'.format(epoch + 1), 'loss': '{:.6f}'.format(loss_mean)})
+            pbar.update(1)
+
     return epoch_loss_list
-
-
-
