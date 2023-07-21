@@ -28,9 +28,6 @@ def files_read_process(path_list: list[str]) -> list[ApiLog]:
     return apilog_list
 
 
-
-
-
 def log2dataset(apilog: ApiLog, prototype_dict: dict, oov_tensor_dict: dict) -> ContextDataset:
     """
     将apilog转化为dataset
@@ -59,6 +56,7 @@ def log2dataset(apilog: ApiLog, prototype_dict: dict, oov_tensor_dict: dict) -> 
     dataset = ContextDataset(feature_tensor, tars)
     return dataset
 
+
 def logs2dataset(logs_list: list[ApiLog], prototype_dict: dict, oov_tensor_dict: dict) -> ContextDataset:
     """
     将logs_list转化为dataset
@@ -69,4 +67,3 @@ def logs2dataset(logs_list: list[ApiLog], prototype_dict: dict, oov_tensor_dict:
     for i in range(1, len(logs_list)):
         dataset += log2dataset(logs_list[i], prototype_dict, oov_tensor_dict)
     return dataset
-

@@ -37,7 +37,7 @@ class TransformerEncoder(nn.Module):
         x = x.mean(dim=2)  # (batch_size, seq_len)
         api_x = self.api_classification(x)  # (batch_size, num_classes)
         result_x = self.result_classification(x)  # (batch_size, 3)
-        result_x = result_x - 1 # -1, 0, 1
+        result_x = result_x - 1  # -1, 0, 1
         return api_x, result_x
 
 

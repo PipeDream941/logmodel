@@ -3,14 +3,25 @@ import torch
 from matplotlib import pyplot as plt
 from tqdm import tqdm
 from model.transformer.trans_model import train
-from typing import List
+from typing import List, Tuple
 
-def predict(model, data_loader, device, k=3):
+
+def predict(model: torch.nn.Module,
+            data_loader: torch.utils.data.DataLoader,
+            device: torch.device,
+            k: int = 3) -> Tuple[List[int], List[int], List[int], List[int]]:
+    """
+    预测函数， 返回api预测结果， res预测结果， api真实结果， res真实结果
+    真实api在在topk中， 则认为预测正确
+    :param model: Transformer Encoder
+    :param data_loader: DataLoader
+    :param device: cuda or cpu
+    :param k: top k, default 3
+    :return: api_predictions, res_predictions, api_targets, res_targets
+    """
     model.eval()
-    api_predictions = []
-    res_predictions = []
-    api_tar = []
-    res_tar = []
+    api_predictions, res_predictions = [], []
+    api_targets, res_targets = [], []
     with torch.no_grad():
         for (data, target) in tqdm(data_loader):
             data = data.to(device)
@@ -20,10 +31,10 @@ def predict(model, data_loader, device, k=3):
             pre_res = output_res.argmax(dim=1)
             res_predictions.extend(pre_res.tolist())
             api_predictions.extend(topk_indices.tolist())
-            api_tar.extend(api_true.tolist())
-            res_tar.extend(res_true.tolist())
+            api_targets.extend(api_true.tolist())
+            res_targets.extend(res_true.tolist())
     res_predictions = [i - 1 for i in res_predictions]
-    return api_predictions, res_predictions, api_tar, res_tar
+    return api_predictions, res_predictions, api_targets, res_targets
 
 
 def only_evaluate(api_predictions, res_predictions, api_tar, res_tar):
@@ -75,16 +86,20 @@ def res_criteria(predictions, tar):
 def get_continuous_data(data: List[int], gap=2):
     """
     间隔为2的数据认为是连续数据
-    :param data:
-    :return:
+    :param gap: gap内的数据认为是连续的
+    :param data: 原始数据
+    :return: List[(start, end)]
     """
+    if len(data) < 2:
+        return data
     continuous_data = []
-    left = 0
-    for right in range(1, len(data)):
+    left, right = 0, 1
+    while right < len(data):
         if data[right] - data[right - 1] > gap:
             continuous_data.append((data[left], data[right - 1]))
             left = right
-    continuous_data.append((data[left], data[-1]))
+        right += 1
+    continuous_data.append((data[left], data[right - 1]))
     return continuous_data
 
 
@@ -102,27 +117,27 @@ def trainer(model, epochs, loader, optimizer, crtierions, weights, device):
         only_evaluate(api_predictions, res_predictions, api_tar, res_tar)
 
 
-def get_anomoly(api_predictions, res_predictions, api_tar, res_tar):
+def get_anomaly(api_predictions, res_predictions, api_targets, res_targets):
     api_abnormal, result_abnormal, only_fail_abnormal = [], [], []
     api_correct, res_correct = 0, 0
     n = len(api_predictions)
     for i in range(n):
-        if api_tar[i] in api_predictions[i]:
+        if api_targets[i] in api_predictions[i]:
             api_correct += 1
         else:
-            api_abnormal.append((i, res_tar[i], res_predictions[i], api_tar[i], api_predictions[i]))
-            if res_tar[i] == -1:
+            api_abnormal.append((i, res_targets[i], res_predictions[i], api_targets[i], api_predictions[i]))
+            if res_targets[i] == -1:
                 only_fail_abnormal.append(i)
-        if res_predictions[i] == res_tar[i]:
+        if res_predictions[i] == res_targets[i]:
             res_correct += 1
         else:
-            result_abnormal.append((i, res_tar[i], res_predictions[i]))
-        api_accuracy, res_accuracy = 100 * api_correct / n, 100 * res_correct / n
-        result_abnormal_fail_continuous = get_continuous_data(only_fail_abnormal)
-
-        print("api_accuracy:{}, res_accuracy:{}".format(api_accuracy, res_accuracy))
-        print("len(api_abnormal):", len(api_abnormal))
-        print("len(result_abnormal):", len(result_abnormal))
-        print("len(only_fail_abnormal):", len(only_fail_abnormal))
-        print("len(result_abnormal_fail_continuous):", len(result_abnormal_fail_continuous))
-        return api_abnormal, result_abnormal, result_abnormal_fail_continuous
+            result_abnormal.append((i, res_targets[i], res_predictions[i]))
+    api_accuracy = round(100 * api_correct / n, 4)
+    res_accuracy = round(100 * res_correct / n, 4)
+    result_abnormal_fail_continuous = get_continuous_data(only_fail_abnormal)
+    print("api_accuracy:{}, res_accuracy:{}".format(api_accuracy, res_accuracy))
+    print("len(api_abnormal):", len(api_abnormal))
+    print("len(result_abnormal):", len(result_abnormal))
+    print("len(only_fail_abnormal):", len(only_fail_abnormal))
+    print("len(result_abnormal_fail_continuous):", len(result_abnormal_fail_continuous))
+    return api_abnormal, result_abnormal, result_abnormal_fail_continuous
